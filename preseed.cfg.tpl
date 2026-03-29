@@ -58,7 +58,10 @@ d-i preseed/late_command string \
   echo "mount_dotfiles /mnt/dotfiles 9p trans=virtio,nofail 0 0" >> /target/etc/fstab; \
   echo "9p" >> /target/etc/modules-load.d/9p.conf; \
   echo "9pnet" >> /target/etc/modules-load.d/9p.conf; \
-  echo "9pnet_virtio" >> /target/etc/modules-load.d/9p.conf
+  echo "9pnet_virtio" >> /target/etc/modules-load.d/9p.conf; \
+  in-target systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target; \
+  mkdir -p /target/etc/systemd/logind.conf.d; \
+  echo "[Login]\nHandleSuspendKey=ignore\nHandleLidSwitch=ignore\nIdleAction=ignore" > /target/etc/systemd/logind.conf.d/no-sleep.conf
 
 # Reboot when done
 d-i finish-install/reboot_in_progress note
