@@ -23,7 +23,7 @@ if virsh domstate "$VM_NAME" 2>/dev/null | grep -q "running"; then
 fi
 
 echo "Removing VM and storage..."
-virsh undefine "$VM_NAME" --remove-all-storage --nvram
+virsh undefine "$VM_NAME" --remove-all-storage --nvram --snapshots-metadata
 
 
 echo "Done. VM '$VM_NAME' has been deleted."
