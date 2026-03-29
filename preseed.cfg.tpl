@@ -42,7 +42,7 @@ tasksel tasksel/first multiselect standard, kde-desktop, ssh-server
 
 # Extra packages
 d-i pkgsel/include string \
-  git vim curl rsync spice-vdagent \
+  git vim curl rsync spice-vdagent qemu-guest-agent \
   bash-completion htop
 
 # No popularity-contest
