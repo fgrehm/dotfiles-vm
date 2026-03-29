@@ -64,6 +64,7 @@ virt-install \
   --graphics spice,listen=none \
   --video qxl \
   --channel spicevmc \
+  --channel unix,target_type=virtio,name=org.qemu.guest_agent.0 \
   --input type=tablet,bus=usb \
   --xml './devices/graphics[@type="spice"]/mouse/@mode=client' \
   --network default \
@@ -74,7 +75,9 @@ virt-install \
   --filesystem "source=$DOTFILES_PATH,target=mount_dotfiles,mode=mapped"
 
 echo ""
-echo "Done. VM '$VM_NAME' is ready."
-echo "  Open the display:  virt-viewer --cursor=local $VM_NAME"
+echo "Install started. Opening display..."
+virt-viewer --attach --cursor=local --wait --reconnect "$VM_NAME" >/dev/null 2>&1 &
+disown
+echo "  The VM will reboot when the install finishes."
 echo "  SSH in:            make ssh"
 echo "  Take a snapshot:   make snapshot NAME=fresh-kde"
