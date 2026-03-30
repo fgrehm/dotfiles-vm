@@ -6,14 +6,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Spins up a disposable Debian 13 (Trixie) VM with KDE Plasma for testing dotfiles. Uses QEMU/KVM + libvirt with a preseed for fully unattended install, and 9p virtio passthrough to mount the host dotfiles directory live inside the guest at `/mnt/dotfiles`.
 
-## Setup
+## Usage
 
-```bash
-cp .env.example .env
-# Edit .env: set DOTFILES_PATH, VM_NAME, VM_USER, VM_PASS, VM_RAM, VM_CPUS, VM_DISK
-# Optionally set ISO_PATH to skip network download
-make create   # ~15 minutes
-```
+See README.md for setup and usage instructions.
 
 ## Common commands
 
@@ -45,7 +40,9 @@ The 9p mount is wired up in the preseed `late_command`: it appends the fstab ent
 
 ## Key constraints
 
-- Requires a Debian 13 host with `qemu-kvm libvirt-daemon-system libvirt-clients virt-manager virt-viewer bridge-utils` and the user in the `libvirt` group.
+- All scripts use `qemu:///session` (user-level libvirt, the default). QEMU runs as the current user, so no special permissions are needed for files under `$HOME`.
+- Networking uses passt with port forwarding. SSH is via `localhost:$VM_SSH_PORT` (default 2222), not via bridge IP.
+- VM disk is stored at `~/.local/share/libvirt/images/` (on `/home`, not `/`).
 - `preseed.cfg` is generated at `make create` time and should not be committed (contains plaintext password from `.env`).
 - `.env` contains credentials -- never commit it.
 - Snapshots use `--disk-only` (external) because UEFI pflash firmware does not support internal snapshots without QCOW2 NVRAM. The VM must be shut off before snapshotting.

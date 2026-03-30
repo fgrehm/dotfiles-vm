@@ -8,10 +8,17 @@ source "$REPO_DIR/.env"
 
 TEMPLATE="$REPO_DIR/preseed.cfg.tpl"
 PRESEED="$REPO_DIR/preseed.cfg"
+SSH_PORT="${VM_SSH_PORT:-2222}"
 
 if virsh dominfo "$VM_NAME" &>/dev/null; then
   echo "ERROR: VM '$VM_NAME' already exists."
   echo "  Run 'make destroy' first, or change VM_NAME in .env"
+  exit 1
+fi
+
+if ! command -v passt &>/dev/null; then
+  echo "ERROR: passt is not installed (needed for VM networking)."
+  echo "  Install it with: sudo apt install passt"
   exit 1
 fi
 
@@ -67,7 +74,7 @@ virt-install \
   --channel unix,target_type=virtio,name=org.qemu.guest_agent.0 \
   --input type=tablet,bus=usb \
   --xml './devices/graphics[@type="spice"]/mouse/@mode=client' \
-  --network default \
+  --network "passt,portForward=127.0.0.1:$SSH_PORT:22" \
   --boot uefi \
   --noautoconsole \
   --initrd-inject "$PRESEED" \

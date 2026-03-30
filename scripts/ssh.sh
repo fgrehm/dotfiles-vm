@@ -4,27 +4,21 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../.env"
 
+SSH_PORT="${VM_SSH_PORT:-2222}"
+
 if ! virsh domstate "$VM_NAME" 2>/dev/null | grep -q "running"; then
   echo "ERROR: VM '$VM_NAME' is not running."
-  echo "  Start it with: virsh start $VM_NAME"
+  echo "  Start it with: make start"
   exit 1
 fi
 
-echo "Waiting for VM to get an IP address..."
+echo "Waiting for SSH on localhost:$SSH_PORT ..."
 
 for i in $(seq 1 30); do
-  ip=$(virsh domifaddr "$VM_NAME" 2>/dev/null \
-    | grep -oP '(\d{1,3}\.){3}\d{1,3}' \
-    | head -1) || true
-  [[ -n "$ip" ]] && break
+  if nc -z localhost "$SSH_PORT" 2>/dev/null; then
+    break
+  fi
   sleep 2
 done
 
-if [[ -z "${ip:-}" ]]; then
-  echo "ERROR: Could not detect IP after 60 seconds."
-  echo "  The VM may still be booting. Try again in a minute."
-  exit 1
-fi
-
-echo "Connecting to $VM_USER@$ip ..."
-exec ssh -o StrictHostKeyChecking=accept-new "$VM_USER@$ip"
+exec ssh -o StrictHostKeyChecking=accept-new -p "$SSH_PORT" "$VM_USER@localhost"
